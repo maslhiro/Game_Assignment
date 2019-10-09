@@ -60,8 +60,6 @@ void LoadResources()
 	//mario->SetPosition(10.0f, 130.0f);
 
 	ball = new CBall(BALL_TEXTURE_PATH);
-	ball->SetPosition(CGame::GetInstance()->getWidth() / 2, CGame::GetInstance()->getHeight() / 2);
-	ball->setVx(2.0f);
 	ball->setVy(1.0f);
 
 	bar1 = new CBar(BAR_TEXTURE_PATH);

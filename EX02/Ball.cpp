@@ -1,24 +1,78 @@
 ﻿#include "Ball.h"
+#define MAX_WAIT_TIME 2000
 
 CBall::CBall()
 {
 
 }
 
+void CBall::init()
+{
+	srand((int)time(0));
+
+	x = CGame::GetInstance()->getWidth() / 2;
+	y = CGame::GetInstance()->getHeight() / 2;
+
+	// xac dinh van toc vx
+	float scale = rand() / (float)RAND_MAX; /* [0, 1.0] */
+	_vx = 1.5f + scale * 0.5f;
+
+	// random huong chuyen dong
+
+
+	int flag = 1 + rand() % (4);
+	switch (flag)
+	{
+	case 1:
+		// goc trai duoi
+		_state = idState::DOWN;
+		_side = idSide::TOP;
+		_preSide = idSide::RIGHT;
+		break;
+	case 2:
+		// goc trai tren
+		_state = idState::UP;
+		_side = idSide::BOTTOM;
+		_preSide = idSide::RIGHT;
+		break;
+	case 3:
+		// goc phai tren
+		_state = idState::UP;
+		_side = idSide::BOTTOM;
+		_preSide = idSide::LEFT;
+		break;
+	case 4:
+		// goc phai duoi 
+		_state = idState::DOWN;
+		_side = idSide::TOP;
+		_preSide = idSide::LEFT;
+		break;
+	default:
+		_state = NULL;
+		_side = NULL;
+		_preSide = NULL;
+		break;
+	}
+
+
+}
+
 void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 {
-	//RECT r = getBoundingBox();
-	//_RPT1(0, "[INFO] BALL : %d, %d , %d , %d \n", r.left, r.top, r.right, r.bottom);
-	//_RPT1(0, "[INFO] CHECK : %d \n", checkCollision(_bar2));
-	//if (checkCollision(_bar2)) {
-	//	//if (_preSide == idSide::BOTTOM) _side = idSide::TOP;
-	//	//else _side = idSide::BOTTOM;
-	//	_state = idState::UP;
-
-	//	//_preSide = idSide::RIGHT;
-	//	//_state = idState::DOWN;
-	//}
-
+	if (_wait)
+	{
+		_waitTime += dt;
+		if (_waitTime >= MAX_WAIT_TIME) {
+			_wait = false;
+			_waitTime = 0;
+			init();
+		}
+		else {
+			x = CGame::GetInstance()->getWidth() / 2;
+			y = CGame::GetInstance()->getHeight() / 2;
+		}
+		return;
+	}
 
 	switch (_side)
 	{
@@ -42,13 +96,13 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 			}
 		}
 		else if (_state == idState::UP) {
-			if (x > (CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)) && _preSide == idSide::LEFT) {
+			if (x >= (CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)) && _preSide == idSide::LEFT) {
 				_side = idSide::RIGHT;
 
 				_preSide = idSide::BOTTOM;
 				_state = idState::DOWN;
 			}
-			else if (x < (_width / 2) + _bar1.right && _preSide == idSide::RIGHT) {
+			else if (x <= (_width / 2) + _bar1.right && _preSide == idSide::RIGHT) {
 				_side = idSide::LEFT;
 
 				_preSide = idSide::BOTTOM;
@@ -82,12 +136,15 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 				}
 				// neu ko dung bar thi chay luon
 				else {
-					// Reset
-					x = CGame::GetInstance()->getWidth() / 2;
-					y = CGame::GetInstance()->getHeight() / 2;
-					_state = idState::UP;
-					_side = idSide::BOTTOM;
-					_preSide = idSide::LEFT;
+					// cho qua bong chay qua man hinh moi reset
+					if (x <= CGame::GetInstance()->getWidth() + _width / 2)
+					{
+						x += _vx;
+					}
+					else {
+						// Reset
+						_wait = true;
+					}
 				}
 			}
 			else {
@@ -98,7 +155,8 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 
 			// kiem tra dung ben trai
 			if (x < _width / 2 + (_bar1.right)) {
-				_preSide = idSide::BOTTOM;
+				// giu nguyen preside vi co 2 TH 1 TOP va 1 BOTTOM
+				//_preSide = idSide::BOTTOM;
 				_state = idState::DOWN;
 				_side = idSide::LEFT;
 
@@ -184,12 +242,15 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 				}
 				// neu ko dung bar thi chay luon
 				else {
-					// Reset
-					x = CGame::GetInstance()->getWidth() / 2;
-					y = CGame::GetInstance()->getHeight() / 2;
-					_state = idState::UP;
-					_side = idSide::BOTTOM;
-					_preSide = idSide::LEFT;
+					// cho qua bong chay qua man hinh moi reset
+					if (x >= -_width / 2)
+					{
+						x -= _vx;
+					}
+					else {
+						// Reset
+						_wait = true;
+					}
 				}
 			}
 			else {
@@ -197,14 +258,14 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 			}
 		}
 		else if (_state == idState::UP) {
-			// kiem tra dung ben trai
+			// kiem tra dung ben phai
 			if (x >= CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)) {
 				//_preSide = idSide::TOP;
 				_state = idState::DOWN;
 				_side = idSide::RIGHT;
 
 			}
-			else if (y < _width / 2 && _preSide == idSide::BOTTOM) {
+			else if (y < _height / 2 && _preSide == idSide::BOTTOM) {
 				_side = idSide::TOP;
 
 				_preSide = idSide::LEFT;

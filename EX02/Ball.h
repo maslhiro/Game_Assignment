@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "Game.h"
+#include <time.h>
 
 enum idState {
 	DOWN = 1,
@@ -24,6 +25,10 @@ private:
 	int _side;
 	int _preSide;
 
+	// thoi gian cho de ball chuyen dong sau khi reset state
+	DWORD _waitTime;
+	bool _wait;
+
 public:
 
 	void setVx(float vx) { _vx = vx; }
@@ -32,18 +37,20 @@ public:
 
 	CBall();
 	CBall(LPCWSTR texturePath) :CGameObject(texturePath) {
-		_vx = 0;
 		_vy = 0;
 
+		_wait = false;
+
+		init();
 		// goc phai duoi 
 		//_state = idState::DOWN;
 		//_side = idSide::TOP;
 		//_preSide = idSide::LEFT;
 
 		// goc phai tren
-		_state = idState::UP;
-		_side = idSide::BOTTOM;
-		_preSide = idSide::LEFT;
+		//_state = idState::UP;
+		//_side = idSide::BOTTOM;
+		//_preSide = idSide::LEFT;
 
 		// goc trai tren
 		//_state = idState::UP;
@@ -55,6 +62,8 @@ public:
 		//_side = idSide::TOP;
 		//_preSide = idSide::RIGHT;
 	};
+
+	void init();
 
 	void update(DWORD, RECT, RECT);
 };
