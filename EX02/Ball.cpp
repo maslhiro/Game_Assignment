@@ -144,6 +144,7 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 					else {
 						// Reset
 						_wait = true;
+						CGame::GetInstance()->increasePointP1();
 					}
 				}
 			}
@@ -250,6 +251,7 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 					else {
 						// Reset
 						_wait = true;
+						CGame::GetInstance()->increasePointP2();
 					}
 				}
 			}

@@ -7,6 +7,7 @@
 #include "GameObject.h"
 #include "Ball.h"
 #include "Bar.h"
+#include "HubPoint.h"
 
 #define WINDOW_CLASS_NAME L"EX02"
 #define MAIN_WINDOW_TITLE L"EX02: Game danh bong"
@@ -14,6 +15,18 @@
 #define BALL_TEXTURE_PATH L"ball.png"
 #define MARIO_TEXTURE_PATH L"mario.png"
 #define BAR_TEXTURE_PATH L"bar.png"
+#define N0_TEXTURE_PATH L"T0.png"
+#define N1_TEXTURE_PATH L"T1.png"
+#define N2_TEXTURE_PATH L"T2.png"
+#define N3_TEXTURE_PATH L"T3.png"
+#define N4_TEXTURE_PATH L"T4.png"
+#define N5_TEXTURE_PATH L"T5.png"
+#define N6_TEXTURE_PATH L"T6.png"
+#define N7_TEXTURE_PATH L"T7.png"
+#define N8_TEXTURE_PATH L"T8.png"
+#define N9_TEXTURE_PATH L"T9.png"
+#define N99_TEXTURE_PATH L"T99.png"
+
 
 #define BACKGROUND_COLOR D3DCOLOR_XRGB(0, 0, 0)
 #define SCREEN_WIDTH 500
@@ -25,6 +38,7 @@ CGame *game;
 CMario *mario;
 CBall *ball;
 CBar *bar1, *bar2;
+HubPoint *_hub;
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -73,6 +87,21 @@ void LoadResources()
 	bar2->SetPosition(CGame::GetInstance()->getWidth(), 0);
 	bar2->setOrigin(bar2->getWidth(), 0);
 	bar2->setVy(1.0f);
+
+	_hub = new HubPoint();
+	_hub->add(eTexture::TEX_T, N99_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_0, N0_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_1, N1_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_2, N2_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_3, N3_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_4, N4_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_5, N5_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_6, N6_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_7, N7_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_8, N8_TEXTURE_PATH);
+	_hub->add(eTexture::TEX_9, N9_TEXTURE_PATH);
+	_hub->setPos(game->getWidth() / 2, 40);
+
 }
 
 /*
@@ -85,6 +114,8 @@ void Update(DWORD dt)
 
 	bar1->Update(dt);
 	bar2->Update(dt);
+
+	_hub->update(dt);
 }
 
 /*
@@ -106,6 +137,7 @@ void Render()
 		ball->Render();
 		bar1->Render();
 		bar2->Render();
+		_hub->render();
 
 		spriteHandler->End();
 		d3ddv->EndScene();

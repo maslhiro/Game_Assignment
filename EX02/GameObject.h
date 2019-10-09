@@ -3,6 +3,21 @@
 #include <Windows.h>
 #include <d3dx9.h>
 
+enum eTexture
+{
+	TEX_0 = 0,
+	TEX_1 = 1,
+	TEX_2,
+	TEX_3,
+	TEX_4,
+	TEX_5,
+	TEX_6,
+	TEX_7,
+	TEX_8,
+	TEX_9,
+	TEX_T
+};
+
 class CGameObject
 {
 protected:

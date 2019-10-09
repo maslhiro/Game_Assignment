@@ -22,10 +22,26 @@ class CGame
 	int _posMouse;
 	int _prePosMouse = 250;
 
+	int _point01, _point02;
+
 public:
 	void Init(HWND hWnd);
 	void Draw(float x, float y, LPDIRECT3DTEXTURE9 texture);
 	void Draw(float, float, D3DXVECTOR3, LPDIRECT3DTEXTURE9);
+
+	void setPointP1(int p) { _point01 = p; }
+	void setPointP2(int p) { _point02 = p; }
+
+	void increasePointP1() { _point01 += 1; }
+	void increasePointP2() { _point02 += 1; }
+
+	void resetPoint() {
+		_point01 = 0;
+		_point02 = 0;
+	}
+
+	int getPointP1() { return _point01; }
+	int getPointP2() { return _point02; }
 
 	void keyDown(int);
 	void keyUp(int);
