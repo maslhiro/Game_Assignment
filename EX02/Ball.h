@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Game.h"
 #include <time.h>
+#include <limits>
 
 enum idState {
 	DOWN = 1,
@@ -18,7 +19,6 @@ enum idSide {
 class CBall : public CGameObject
 {
 private:
-	float _vx, _vy;
 
 	int _state;
 
@@ -29,10 +29,10 @@ private:
 	DWORD _waitTime;
 	bool _wait;
 
+	float dx, dy;
+
 public:
 
-	void setVx(float vx) { _vx = vx; }
-	void setVy(float vy) { _vy = vy; }
 	void setState(int state) { _state = state; }
 
 	CBall();
@@ -66,5 +66,9 @@ public:
 	void init();
 
 	void update(DWORD, RECT, RECT);
+
+	void update02(DWORD, RECT, RECT, float);
+
+
 };
 

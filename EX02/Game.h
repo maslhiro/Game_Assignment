@@ -55,8 +55,8 @@ public:
 
 	static CGame * GetInstance();
 
-	float getWidth() { return (float)_rectWindow.right; };
-	float getHeight() { return (float)_rectWindow.bottom; };
+	int getWidth() { return _rectWindow.right; };
+	int getHeight() { return _rectWindow.bottom; };
 
 	int getKeyDown() { return _keyCode; }
 

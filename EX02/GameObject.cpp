@@ -24,6 +24,7 @@ CGameObject::CGameObject()
 CGameObject::CGameObject(LPCWSTR texturePath)
 {
 	x = y = 0;
+	_vx = _vy = 0.0f;
 
 	D3DXIMAGE_INFO info;
 	HRESULT result = D3DXGetImageInfoFromFile(texturePath, &info);

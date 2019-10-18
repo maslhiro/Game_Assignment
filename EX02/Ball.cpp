@@ -14,13 +14,19 @@ void CBall::init()
 	y = CGame::GetInstance()->getHeight() / 2;
 
 	// xac dinh van toc vx
-	float scale = rand() / (float)RAND_MAX; /* [0, 1.0] */
-	_vx = 1.5f + scale * 0.5f;
-
+	float scale = rand() / (float)RAND_MAX; /*  [5.0, 7.0] */
+	//_vx = 1.5f + scale * 0.5f;
+	//_vx = 0.5f;
+	_vx = 0.125f;
 	// random huong chuyen dong
+	//_vy = 0.075f;
+	_vy = 0.1f;
 
+	dx = _vx;
+	dy = _vy;
 
-	int flag = 1 + rand() % (4);
+	int flag = 3;
+	//int flag = 1 + rand() % (4);
 	switch (flag)
 	{
 	case 1:
@@ -59,6 +65,8 @@ void CBall::init()
 
 void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 {
+	DWORD collisionTime = dt;
+
 	if (_wait)
 	{
 		_waitTime += dt;
@@ -76,219 +84,348 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 
 	switch (_side)
 	{
+#pragma region BOTTOM
 	case idSide::BOTTOM:
 	{
-		if (_preSide == idSide::LEFT)
-		{
-			x += _vx;
-		}
-		else if (_preSide == idSide::RIGHT)
-		{
-			x -= _vx;
-		}
-
 		if (_state == idState::DOWN) {
-			if (y < CGame::GetInstance()->getHeight() - _width / 2) {
-				y += _vy;
+			if (std::lroundf(y) < CGame::GetInstance()->getHeight() - _width / 2) {
+				dy = _vy;
+				y += dy * dt;
 			}
 			else {
+				y = CGame::GetInstance()->getHeight() - _width / 2;
 				_state = idState::UP;
 			}
 		}
 		else if (_state == idState::UP) {
-			if (x >= (CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)) && _preSide == idSide::LEFT) {
-				_side = idSide::RIGHT;
+			_RPT1(0, "[INFO] X %ld - %ld \n", std::lroundf(x), CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left));
+
+			if (std::floorf(x) > ((_width / 2) + _bar1.right) && std::lroundf(x) < (CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)))
+			{
+				// check swept aabb
+				if (_preSide == idSide::LEFT)
+				{
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt);
+
+				}
+				else if (_preSide == idSide::RIGHT)
+				{
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt);
+
+				}
+				_RPT1(0, "[INFO] COLLISION %ld \n", collisionTime);
+
+				//_RPT1(0, "[INFO] colis %ld - %ld", collisionTime, dt);
+
+				dy = -_vy;
+				y += dy * collisionTime;
+			}
+			else
+			{
+
+				if (_preSide == idSide::LEFT)
+				{
+					_side = idSide::RIGHT;
+				}
+				else if (_preSide == idSide::RIGHT)
+				{
+					_side = idSide::LEFT;
+				}
 
 				_preSide = idSide::BOTTOM;
 				_state = idState::DOWN;
-			}
-			else if (x <= (_width / 2) + _bar1.right && _preSide == idSide::RIGHT) {
-				_side = idSide::LEFT;
-
-				_preSide = idSide::BOTTOM;
-				_state = idState::DOWN;
-			}
-			else {
-				y -= _vy;
+				return;
 
 			}
 		}
+
+		if (_preSide == idSide::LEFT)
+		{
+			dx = _vx;
+			x += dx * collisionTime;
+		}
+		else if (_preSide == idSide::RIGHT)
+		{
+			dx = -_vx;
+			x += dx * collisionTime;
+		}
 	}
 	break;
+#pragma endregion
 
+#pragma region RIGHT
 	case idSide::RIGHT:
 	{
 		if (_preSide == idSide::BOTTOM)
 		{
-			y -= _vy;
+			dy = -_vy;
+			y += dy * dt;
 		}
 		else if (_preSide == idSide::TOP)
 		{
-			y += _vy;
+			dy = _vy;
+			y += dy * dt;
 		}
 
 		if (_state == idState::DOWN) {
-			//_RPT1(0, "[INFO] CHECK BAR 2 : %d \n", checkCollision(_bar2));
-			if (x >= CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)) {
+			//if (std::lroundf(x) >= CGame::GetInstance()->getWidth() - _width / 2)
+			//{
+			//	x = CGame::GetInstance()->getWidth() - _width / 2;
+			//	_state = idState::UP;
+			//}
+			//else {
+			//	dx = _vx;
+			//	x += dx * dt;
+			//}
+
+			if (std::lroundf(x) <= CGame::GetInstance()->getWidth() + _width / 2)
+			{
+				// check va cham 
 				if (checkCollision(_bar2)) {
-					_RPT1(0, "[INFO] %d < Pos BAR 2 %d < %d \n", _bar2.top, y, _bar2.bottom);
+					//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
 					_state = idState::UP;
 				}
-				// neu ko dung bar thi chay luon
 				else {
-					// cho qua bong chay qua man hinh moi reset
-					if (x <= CGame::GetInstance()->getWidth() + _width / 2)
-					{
-						x += _vx;
-					}
-					else {
-						// Reset
-						_wait = true;
-						CGame::GetInstance()->increasePointP1();
-					}
+					dx = _vx;
+					x += dx * dt;
 				}
 			}
 			else {
-				x += _vx;
+				// Reset
+				_wait = true;
+				CGame::GetInstance()->increasePointP1();
 			}
 		}
 		else if (_state == idState::UP) {
+			if (std::floorf(y) <= _height / 2 && _preSide == idSide::BOTTOM) {
+				y = _height / 2;
 
-			// kiem tra dung ben trai
-			if (x < _width / 2 + (_bar1.right)) {
-				// giu nguyen preside vi co 2 TH 1 TOP va 1 BOTTOM
-				//_preSide = idSide::BOTTOM;
-				_state = idState::DOWN;
-				_side = idSide::LEFT;
-
-			}
-			// dung top
-			else if (y < _width / 2 && _preSide == idSide::BOTTOM) {
 				_side = idSide::TOP;
 
 				_preSide = idSide::RIGHT;
 				_state = idState::DOWN;
 			}
-			// dung bottom
-			else if (y > CGame::GetInstance()->getHeight() - _width / 2 && _preSide == idSide::TOP) {
+			else if (std::lroundf(y) >= CGame::GetInstance()->getHeight() - _width / 2 && _preSide == idSide::TOP) {
+				y = CGame::GetInstance()->getHeight() - _width / 2;
+
 				_side = idSide::BOTTOM;
 
 				_preSide = idSide::RIGHT;
 				_state = idState::DOWN;
 			}
 			else {
-				x -= _vx;
 
+				// check xem co dung canh phai truoc hay ko ?
+
+				if (std::lroundf(x) <= _width / 2 + _bar1.right)
+				{
+					x = _width / 2 + _bar1.right;
+					_side = idSide::LEFT;
+					_state = idState::DOWN;
+
+				}
+				//else
+				{
+					dx = -_vx;
+					x += dx * dt;
+				}
 			}
 		}
 	}
 	break;
+#pragma endregion
 
+#pragma region TOP
 	case idSide::TOP:
 	{
-		if (_preSide == idSide::LEFT)
-		{
-			x += _vx;
-		}
-		else if (_preSide == idSide::RIGHT)
-		{
-			x -= _vx;
-		}
 
 		if (_state == idState::UP) {
-			if (x > _width / 2 - _bar1.right) {
-				y -= _vy;
+
+			if (std::floorf(x) > ((_width / 2) + _bar1.right) && std::lroundf(x) < (CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)))
+			{
+				// check swept aabb
+				if (_preSide == idSide::LEFT)
+				{
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt);
+
+				}
+				else if (_preSide == idSide::RIGHT)
+				{
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt);
+
+				}
+				_RPT1(0, "[INFO] COLLISION %ld \n", collisionTime);
+
+				//_RPT1(0, "[INFO] colis %ld - %ld", collisionTime, dt);
+
+				dy = _vy;
+				y += dy * collisionTime;
 			}
-			else {
+			else
+			{
+
+				if (_preSide == idSide::LEFT)
+				{
+					_side = idSide::RIGHT;
+				}
+				else if (_preSide == idSide::RIGHT)
+				{
+					_side = idSide::LEFT;
+				}
+
+				_preSide = idSide::TOP;
 				_state = idState::DOWN;
+				return;
+
 			}
 		}
 		else if (_state == idState::DOWN) {
-			if (x < _width / 2 + _bar1.right && _preSide == idSide::RIGHT) {
-				_side = idSide::LEFT;
 
-				_preSide = idSide::TOP;
-				_state = idState::DOWN;
-			}
-			else if (x > CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left) && _preSide == idSide::LEFT) {
-				_side = idSide::RIGHT;
-
-				_preSide = idSide::TOP;
-				_state = idState::DOWN;
+			if (std::floorf(y) > _height / 2) {
+				dy = _vy;
+				y += dy * dt;
 			}
 			else {
-				y += _vy;
-
+				y = _height / 2;
+				_state = idState::UP;
 			}
+
+		}
+
+		if (_preSide == idSide::LEFT)
+		{
+			dx = _vx;
+			x += dx * collisionTime;
+		}
+		else if (_preSide == idSide::RIGHT)
+		{
+			dx = -_vx;
+			x += dx * collisionTime;
 		}
 	}
 	break;
+#pragma endregion
 
+#pragma region LEFT
 	case idSide::LEFT:
 	{
+		_RPT0(0, "[OK LEFT] ====================== \n");
 		if (_preSide == idSide::BOTTOM)
 		{
-			y -= _vy;
+			dy = -_vy;
+			y += dy * dt;
 		}
 		else if (_preSide == idSide::TOP)
 		{
-			y += _vy;
+			dy = _vy;
+			y += dy * dt;
 		}
 
 		if (_state == idState::DOWN) {
-			if (x <= _width / 2 + _bar1.right) {
+			if (std::floorf(x) >= -_width / 2)
+			{
+				// check va cham 
 				if (checkCollision(_bar1)) {
-					_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
+					//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
 					_state = idState::UP;
 				}
-				// neu ko dung bar thi chay luon
 				else {
-					// cho qua bong chay qua man hinh moi reset
-					if (x >= -_width / 2)
-					{
-						x -= _vx;
-					}
-					else {
-						// Reset
-						_wait = true;
-						CGame::GetInstance()->increasePointP2();
-					}
+					dx = -_vx;
+					x += dx * dt;
 				}
 			}
 			else {
-				x -= _vx;
+				// Reset
+				_wait = true;
+				CGame::GetInstance()->increasePointP2();
 			}
 		}
 		else if (_state == idState::UP) {
-			// kiem tra dung ben phai
-			if (x >= CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)) {
-				//_preSide = idSide::TOP;
-				_state = idState::DOWN;
-				_side = idSide::RIGHT;
 
-			}
-			else if (y < _height / 2 && _preSide == idSide::BOTTOM) {
+			if (std::floorf(y) <= _height / 2 && _preSide == idSide::BOTTOM) {
+				y = _height / 2;
+
 				_side = idSide::TOP;
 
 				_preSide = idSide::LEFT;
 				_state = idState::DOWN;
 			}
-			else if (y > CGame::GetInstance()->getHeight() - _width / 2 && _preSide == idSide::TOP) {
+			else if (std::lroundf(y) >= CGame::GetInstance()->getHeight() - _width / 2 && _preSide == idSide::TOP) {
+				y = CGame::GetInstance()->getHeight() - _width / 2;
+
 				_side = idSide::BOTTOM;
 
 				_preSide = idSide::LEFT;
 				_state = idState::DOWN;
 			}
 			else {
-				x += _vx;
+				// check xem co dung canh phai truoc hay ko ?
 
+				if (std::lroundf(x) >= CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left))
+				{
+					x = CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left);
+					_side = idSide::RIGHT;
+					_state = idState::DOWN;
+
+				}
+				else
+				{
+					dx = _vx;
+					x += dx * dt;
+				}
 			}
 		}
 	}
 	break;
+#pragma endregion
 
 	default:
 		break;
 	}
 
+}
+
+void CBall::update02(DWORD dt, RECT _bar1, RECT _bar2, float vy1)
+{
+	if (_wait)
+	{
+		/*	_waitTime += dt;
+			if (_waitTime >= MAX_WAIT_TIME) {
+				_wait = false;
+				_waitTime = 0;
+				init();
+			}
+			else {
+				x = CGame::GetInstance()->getWidth() / 2;
+				y = CGame::GetInstance()->getHeight() / 2;
+			}*/
+		return;
+	}
+
+	RECT rectTop;
+	rectTop.top = 0;
+	rectTop.bottom = 0;
+	rectTop.left = 0;
+	rectTop.right = CGame::GetInstance()->getWidth();
+
+	if (y < getHeight() / 2 || y > CGame::GetInstance()->getHeight() - getHeight() / 2) {
+		dy = -dy;
+	}
+
+	if (x < getWidth() / 2 || x > CGame::GetInstance()->getWidth() - getWidth() / 2) {
+		dx = -dx;
+	}
+
+	//if (test != 1000.0f) {
+	//	//_wait = true;
+	//	_RPT1(0, "[INFO] CHECK BALL : %f \n", test);
+	//}
+	//if (test != dt) {
+	//	//CGame::GetInstance()->increasePointP1();
+	//	_RPT0(0, "+++++++++++++++++++++++++++++++\n");
+	//	_RPT1(0, "[INFO] CHECK BALL : %f \n", test);
+	//}
+
+	x += dx * dt;
+	y += dy * dt;
 }

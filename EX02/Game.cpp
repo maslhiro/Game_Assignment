@@ -67,7 +67,7 @@ void CGame::Draw(float x, float y, D3DXVECTOR3 _origin, LPDIRECT3DTEXTURE9 _text
 
 void CGame::keyDown(int keyCode)
 {
-	_RPT1(0, "[INFO] Key down %d \n", keyCode);
+	//_RPT1(0, "[INFO] Key down %d \n", keyCode);
 	_keyCode = keyCode;
 }
 

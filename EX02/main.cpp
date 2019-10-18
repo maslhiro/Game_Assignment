@@ -32,7 +32,7 @@
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 
-#define MAX_FRAME_RATE 90
+#define MAX_FRAME_RATE 60
 
 CGame *game;
 CMario *mario;
@@ -55,9 +55,6 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEMOVE:
 		CGame::GetInstance()->mouseMove(GET_Y_LPARAM(lParam));
 		break;
-		//case WM_MOUSEHOVER:
-		//	CGame::GetInstance()->mouseHover(GET_Y_LPARAM(lParam));
-		//	break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -74,19 +71,18 @@ void LoadResources()
 	//mario->SetPosition(10.0f, 130.0f);
 
 	ball = new CBall(BALL_TEXTURE_PATH);
-	ball->setVy(1.0f);
 
 	bar1 = new CBar(BAR_TEXTURE_PATH);
 	bar1->setId(1);
 	bar1->SetPosition(0, 0);
 	bar1->setOrigin(0, 0);
-	bar1->setVy(1.0f);
+	bar1->setVy(2.0f);
 
 	bar2 = new CBar(BAR_TEXTURE_PATH);
 	bar2->setId(2);
 	bar2->SetPosition(CGame::GetInstance()->getWidth(), 0);
 	bar2->setOrigin(bar2->getWidth(), 0);
-	bar2->setVy(1.0f);
+	bar2->setVy(2.0f);
 
 	_hub = new HubPoint();
 	_hub->add(eTexture::TEX_T, N99_TEXTURE_PATH);
@@ -110,10 +106,11 @@ void LoadResources()
 */
 void Update(DWORD dt)
 {
-	ball->update(dt, bar1->getBoundingBox(), bar2->getBoundingBox());
 
 	bar1->Update(dt);
 	bar2->Update(dt);
+
+	ball->update(dt, bar1->getBoundingBox(), bar2->getBoundingBox());
 
 	_hub->update(dt);
 }

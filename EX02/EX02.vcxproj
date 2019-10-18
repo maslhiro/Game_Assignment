@@ -79,6 +79,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <CallingConvention>StdCall</CallingConvention>
     </ClCompile>
     <Link>
       <AdditionalDependencies>d3dx9.lib;d3d9.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -126,6 +127,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="HubPoint.h" />
+    <ClInclude Include="SweptAABB.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />

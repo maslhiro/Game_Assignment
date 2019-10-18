@@ -30,6 +30,9 @@
     <ClInclude Include="HubPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SweptAABB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ball.cpp">
