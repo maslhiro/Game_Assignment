@@ -13,6 +13,8 @@ void CBall::init()
 	x = CGame::GetInstance()->getWidth() / 2;
 	y = CGame::GetInstance()->getHeight() / 2;
 
+	resultCollision = 0;
+
 	// xac dinh van toc vx
 	float scale = rand() / (float)RAND_MAX; /*  [5.0, 7.0] */
 	//_vx = 1.5f + scale * 0.5f;
@@ -20,7 +22,7 @@ void CBall::init()
 	//_vx = 0.25f;
 	_vx = 0.125f;
 	// random huong chuyen dong
-	_vy = 0.075f;
+	_vy = 0.1f;
 	//_vy = 0.5f;
 
 	dx = _vx;
@@ -67,7 +69,7 @@ void CBall::init()
 void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 {
 	DWORD collisionTime = dt;
-	resultCollision = 0;
+
 
 	if (_wait)
 	{
@@ -109,11 +111,27 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 				{
 					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt, resultCollision);
 
+					if (resultCollision == eDirection::D_RIGHT)
+					{
+						_side = idSide::RIGHT;
+						_preSide = idSide::BOTTOM;
+						_state = idState::UP;
+
+						break;
+					}
 				}
 				else if (_preSide == idSide::RIGHT)
 				{
 					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt, resultCollision);
 
+					if (resultCollision == eDirection::D_LEFT)
+					{
+						_side = idSide::LEFT;
+						_preSide = idSide::BOTTOM;
+						_state = idState::UP;
+
+						break;
+					}
 				}
 				_RPT1(0, "[INFO] COLLISION BOTTOM %ld \n", collisionTime);
 
@@ -182,17 +200,19 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 
 			if (std::lroundf(x) <= CGame::GetInstance()->getWidth() + _width / 2)
 			{
+				dx = _vx;
+				x += dx * dt;
 				// check va cham 
 				//sweptAABB(dx, dy, getBoundingBox(), _bar2, dt, resultCollision);
 				//if (resultCollision == eDirection::D_RIGHT) {
-				if (checkCollision(_bar2)) {
-					//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
-					_state = idState::UP;
-				}
-				else {
-					dx = _vx;
-					x += dx * dt;
-				}
+				//if (checkCollision(_bar2)) {
+				//	//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
+				//	_state = idState::UP;
+				//}
+				//else {
+				//	dx = _vx;
+				//	x += dx * dt;
+				//}
 			}
 			else {
 				// Reset
@@ -221,7 +241,7 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 
 				// check xem co dung canh phai truoc hay ko ?
 
-				if (std::lroundf(x) <= _width / 2 + _bar1.right)
+				if (std::floorf(x) <= _width / 2 + _bar1.right)
 				{
 					if (_preSide == idSide::TOP) 	_side = idSide::BOTTOM;
 					else if (_preSide == idSide::BOTTOM) _side = idSide::TOP;
@@ -257,13 +277,28 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 				{
 					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt, resultCollision);
 
+					if (resultCollision == eDirection::D_RIGHT)
+					{
+						_side = idSide::RIGHT;
+						_preSide = idSide::TOP;
+						_state = idState::UP;
+
+						break;
+					}
 				}
 				else if (_preSide == idSide::RIGHT)
 				{
 					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt, resultCollision);
 
-				}
+					if (resultCollision == eDirection::D_LEFT)
+					{
+						_side = idSide::RIGHT;
+						_preSide = idSide::TOP;
+						_state = idState::UP;
 
+						break;
+					}
+				}
 				_RPT1(0, "[INFO] COLLISION TOP %ld \n", collisionTime);
 				_RPT1(0, "[INFO] DIRECTION %d \n", resultCollision);
 
@@ -333,15 +368,18 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 		if (_state == idState::DOWN) {
 			if (std::floorf(x) >= -_width / 2)
 			{
+
+				dx = -_vx;
+				x += dx * dt;
 				// check va cham 
-				if (checkCollision(_bar1)) {
-					//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
-					_state = idState::UP;
-				}
-				else {
-					dx = -_vx;
-					x += dx * dt;
-				}
+				//if (checkCollision(_bar1)) {
+				//	//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
+				//	_state = idState::UP;
+				//}
+				//else {
+				//	dx = -_vx;
+				//	x += dx * dt;
+				//}
 			}
 			else {
 				// Reset
