@@ -19,6 +19,14 @@ enum eTexture
 	TEX_T
 };
 
+enum eDirection
+{
+	D_LEFT = 1,
+	D_RIGHT,
+	D_UP,
+	D_DOWN
+};
+
 class CGameObject
 {
 protected:
@@ -55,7 +63,7 @@ public:
 
 	bool checkCollision(RECT);
 
-	DWORD sweptAABB(float vx, float vy, RECT _rectObj, RECT _rectOther, DWORD dt)
+	DWORD sweptAABB(float dx, float dy, RECT _rectObj, RECT _rectOther, DWORD dt, int &result)
 	{
 		LONG dxEntry, dxExit;
 		LONG dyEntry, dyExit;
@@ -69,7 +77,7 @@ public:
 		//if (check) return 1000.f;
 
 		//// tìm khoảng cách các cạnh tương ứng
-		if (vx > 0.0f)
+		if (dx > 0.0f)
 		{
 			dxEntry = _rectOther.left - _rectObj.right;
 			dxExit = _rectOther.right - _rectObj.left;
@@ -81,7 +89,7 @@ public:
 		}
 
 
-		if (vy > 0.0f)
+		if (dy > 0.0f)
 		{
 			dyEntry = _rectOther.top - _rectObj.bottom;
 			dyExit = _rectOther.bottom - _rectObj.top;
@@ -97,37 +105,37 @@ public:
 		float tyEntry, tyExit;
 
 		//// tim thoi gian va cham
-		if (vx == 0.0f)
+		if (dx == 0.0f)
 		{
 			// đang đứng yên thì bằng vô cực (chia cho  0)
 			txEntry = -std::numeric_limits<long>::infinity();
 			txExit = std::numeric_limits<long>::infinity();
 		}
-		else if (vx > 0.0f)
+		else if (dx > 0.0f)
 		{
-			txEntry = dxEntry / vx;
-			txExit = dxExit / vx;
+			txEntry = dxEntry / dx;
+			txExit = dxExit / dx;
 		}
-		else if (vx < 0.0f)
+		else if (dx < 0.0f)
 		{
-			txEntry = dxEntry / -vx;
-			txExit = dxExit / -vx;
+			txEntry = dxEntry / -dx;
+			txExit = dxExit / -dx;
 		}
 
-		if (vy == 0.0f)
+		if (dy == 0.0f)
 		{
 			tyEntry = -std::numeric_limits<long>::infinity();
 			tyExit = std::numeric_limits<long>::infinity();
 		}
-		else if (vy > 0.0f)
+		else if (dy > 0.0f)
 		{
-			tyEntry = dyEntry / vy;
-			tyExit = dyExit / vy;
+			tyEntry = dyEntry / dy;
+			tyExit = dyExit / dy;
 		}
-		else if (vy < 0.0f)
+		else if (dy < 0.0f)
 		{
-			tyEntry = dyEntry / -vy;
-			tyExit = dyExit / -vy;
+			tyEntry = dyEntry / -dy;
+			tyExit = dyExit / -dy;
 		}
 
 		// thời gian va chạm là thời gian lớn nhất của 2 trục (2 trục phải cùng tiếp xúc thì mới va chạm)
@@ -143,36 +151,38 @@ public:
 		// kiểm tra xem có thể va chạm không, mình xét ngược lại cho nhanh
 		if (entryTime > exitTime || (txEntry < 0 && tyEntry < 0) || txEntry > dt || tyEntry > dt)
 		{
+			result = 0;
 			return dt;
 		}
 
-		/*if (txEntry > tyEntry)
+		// Kiem tra xem time theo chieu x hay y se dung obj truoc
+		if (txEntry > tyEntry)
 		{
-			if (dxEntry < 0.0f)
+			// va cham theo truc x
+			if (dxEntry > 0.0f)
 			{
-				normalx = 1.0f;
-				normaly = 0.0f;
+				if (dx > 0.0f)	result = eDirection::D_RIGHT;
+				else result = eDirection::D_LEFT;
 			}
 			else
 			{
-				normalx = -1.0f;
-				normaly = 0.0f;
+				if (dx > 0.0f)	result = eDirection::D_LEFT;
+				else result = eDirection::D_RIGHT;
 			}
 		}
 		else
 		{
-			if (dyEntry < 0.0f)
+			if (dyEntry > 0.0f)
 			{
-				normalx = 0.0f;
-				normaly = 1.0f;
+				if (dy > 0.0f)	result = eDirection::D_UP;
+				else result = eDirection::D_DOWN;
 			}
 			else
 			{
-				normalx = 0.0f;
-				normaly = -1.0f;
+				if (dy > 0.0f)	result = eDirection::D_DOWN;
+				else result = eDirection::D_UP;
 			}
-		}*/
-
+		}
 
 		return entryTime;
 	}

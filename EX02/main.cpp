@@ -32,7 +32,7 @@
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 
-#define MAX_FRAME_RATE 60
+#define MAX_FRAME_RATE 50
 
 CGame *game;
 CMario *mario;

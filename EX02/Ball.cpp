@@ -16,16 +16,17 @@ void CBall::init()
 	// xac dinh van toc vx
 	float scale = rand() / (float)RAND_MAX; /*  [5.0, 7.0] */
 	//_vx = 1.5f + scale * 0.5f;
-	//_vx = 0.5f;
+	//_vx = 1.5f;
+	//_vx = 0.25f;
 	_vx = 0.125f;
 	// random huong chuyen dong
-	//_vy = 0.075f;
-	_vy = 0.1f;
+	_vy = 0.075f;
+	//_vy = 0.5f;
 
 	dx = _vx;
 	dy = _vy;
 
-	int flag = 3;
+	int flag = 2;
 	//int flag = 1 + rand() % (4);
 	switch (flag)
 	{
@@ -66,6 +67,7 @@ void CBall::init()
 void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 {
 	DWORD collisionTime = dt;
+	resultCollision = 0;
 
 	if (_wait)
 	{
@@ -98,24 +100,24 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 			}
 		}
 		else if (_state == idState::UP) {
-			_RPT1(0, "[INFO] X %ld - %ld \n", std::lroundf(x), CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left));
+			//_RPT1(0, "[INFO] X %ld - %ld \n", std::lroundf(x), CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left));
 
 			if (std::floorf(x) > ((_width / 2) + _bar1.right) && std::lroundf(x) < (CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left)))
 			{
 				// check swept aabb
 				if (_preSide == idSide::LEFT)
 				{
-					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt);
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt, resultCollision);
 
 				}
 				else if (_preSide == idSide::RIGHT)
 				{
-					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt);
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt, resultCollision);
 
 				}
-				_RPT1(0, "[INFO] COLLISION %ld \n", collisionTime);
+				_RPT1(0, "[INFO] COLLISION BOTTOM %ld \n", collisionTime);
 
-				//_RPT1(0, "[INFO] colis %ld - %ld", collisionTime, dt);
+				_RPT1(0, "[INFO] DIRECTION %d \n", resultCollision);
 
 				dy = -_vy;
 				y += dy * collisionTime;
@@ -181,6 +183,8 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 			if (std::lroundf(x) <= CGame::GetInstance()->getWidth() + _width / 2)
 			{
 				// check va cham 
+				//sweptAABB(dx, dy, getBoundingBox(), _bar2, dt, resultCollision);
+				//if (resultCollision == eDirection::D_RIGHT) {
 				if (checkCollision(_bar2)) {
 					//_RPT1(0, "[INFO] %d < Pos BAR 1 %d < %d \n", _bar1.top, y, _bar1.bottom);
 					_state = idState::UP;
@@ -219,7 +223,12 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 
 				if (std::lroundf(x) <= _width / 2 + _bar1.right)
 				{
+					if (_preSide == idSide::TOP) 	_side = idSide::BOTTOM;
+					else if (_preSide == idSide::BOTTOM) _side = idSide::TOP;
+
+
 					x = _width / 2 + _bar1.right;
+
 					_side = idSide::LEFT;
 					_state = idState::DOWN;
 
@@ -246,17 +255,17 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 				// check swept aabb
 				if (_preSide == idSide::LEFT)
 				{
-					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt);
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar2, dt, resultCollision);
 
 				}
 				else if (_preSide == idSide::RIGHT)
 				{
-					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt);
+					collisionTime = sweptAABB(dx, dy, getBoundingBox(), _bar1, dt, resultCollision);
 
 				}
-				_RPT1(0, "[INFO] COLLISION %ld \n", collisionTime);
 
-				//_RPT1(0, "[INFO] colis %ld - %ld", collisionTime, dt);
+				_RPT1(0, "[INFO] COLLISION TOP %ld \n", collisionTime);
+				_RPT1(0, "[INFO] DIRECTION %d \n", resultCollision);
 
 				dy = _vy;
 				y += dy * collisionTime;
@@ -309,7 +318,7 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 #pragma region LEFT
 	case idSide::LEFT:
 	{
-		_RPT0(0, "[OK LEFT] ====================== \n");
+		//_RPT0(0, "[OK LEFT] ====================== \n");
 		if (_preSide == idSide::BOTTOM)
 		{
 			dy = -_vy;
@@ -363,6 +372,8 @@ void CBall::update(DWORD dt, RECT _bar1, RECT _bar2)
 
 				if (std::lroundf(x) >= CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left))
 				{
+					if (_preSide == idSide::TOP) 	_side = idSide::BOTTOM;
+					else if (_preSide == idSide::BOTTOM) _side = idSide::TOP;
 					x = CGame::GetInstance()->getWidth() - _width / 2 - (_bar2.right - _bar2.left);
 					_side = idSide::RIGHT;
 					_state = idState::DOWN;
@@ -415,16 +426,6 @@ void CBall::update02(DWORD dt, RECT _bar1, RECT _bar2, float vy1)
 	if (x < getWidth() / 2 || x > CGame::GetInstance()->getWidth() - getWidth() / 2) {
 		dx = -dx;
 	}
-
-	//if (test != 1000.0f) {
-	//	//_wait = true;
-	//	_RPT1(0, "[INFO] CHECK BALL : %f \n", test);
-	//}
-	//if (test != dt) {
-	//	//CGame::GetInstance()->increasePointP1();
-	//	_RPT0(0, "+++++++++++++++++++++++++++++++\n");
-	//	_RPT1(0, "[INFO] CHECK BALL : %f \n", test);
-	//}
 
 	x += dx * dt;
 	y += dy * dt;

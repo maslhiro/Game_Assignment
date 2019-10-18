@@ -29,6 +29,8 @@ private:
 	DWORD _waitTime;
 	bool _wait;
 
+	int resultCollision;
+
 	float dx, dy;
 
 public:
