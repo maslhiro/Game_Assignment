@@ -63,18 +63,28 @@ public:
 
 	bool checkCollision(RECT);
 
-	DWORD sweptAABB(float dx, float dy, RECT _rectObj, RECT _rectOther, DWORD dt, int &result)
+	RECT getSweptBroadphaseRect(float dx, float dy)
+	{
+		RECT current = getBoundingBox();
+
+		current.left = dx != 0 ? current.left + dx : current.left;
+		current.right = dx != 0 ? current.right + dx : current.right;
+		current.top = dy != 0 ? current.top + dy : current.top;
+		current.bottom = dy != 0 ? current.bottom + dy : current.bottom;
+
+		return current;
+	}
+
+	DWORD sweptAABB(float dx, float dy, RECT _rectOther, DWORD dt, int &result)
 	{
 		LONG dxEntry, dxExit;
 		LONG dyEntry, dyExit;
 
-		//_RPT1(0, "[INFO] VX : %f \n", vx);
-		//_RPT1(0, "[INFO] VY : %f \n", vy);
 
-
-		// kiem tra 2 hinh da  chong len nhau
-		//bool check = checkCollision(_rectOther);
-		//if (check) return 1000.f;
+		RECT _rectObj = getSweptBroadphaseRect(dx, dy);
+		//RECT _rectObj = getBoundingBox();
+		//_RPT1(0, "[INFO] SWEPT : %d %d %d %d \n", _rectObj.left, _rectObj.top, _rectObj.right, _rectObj.bottom);
+		//_RPT1(0, "[INFO] BOX : %d %d %d %d \n", getBoundingBox().left, getBoundingBox().top, getBoundingBox().right, getBoundingBox().bottom);
 
 		//// tìm khoảng cách các cạnh tương ứng
 		if (dx > 0.0f)
@@ -111,15 +121,10 @@ public:
 			txEntry = -std::numeric_limits<long>::infinity();
 			txExit = std::numeric_limits<long>::infinity();
 		}
-		else if (dx > 0.0f)
+		else
 		{
-			txEntry = dxEntry / dx;
-			txExit = dxExit / dx;
-		}
-		else if (dx < 0.0f)
-		{
-			txEntry = dxEntry / -dx;
-			txExit = dxExit / -dx;
+			txEntry = dxEntry / abs(dx);
+			txExit = dxExit / abs(dx);
 		}
 
 		if (dy == 0.0f)
@@ -127,26 +132,16 @@ public:
 			tyEntry = -std::numeric_limits<long>::infinity();
 			tyExit = std::numeric_limits<long>::infinity();
 		}
-		else if (dy > 0.0f)
+		else
 		{
-			tyEntry = dyEntry / dy;
-			tyExit = dyExit / dy;
-		}
-		else if (dy < 0.0f)
-		{
-			tyEntry = dyEntry / -dy;
-			tyExit = dyExit / -dy;
+			tyEntry = dyEntry / abs(dy);
+			tyExit = dyExit / abs(dy);
 		}
 
 		// thời gian va chạm là thời gian lớn nhất của 2 trục (2 trục phải cùng tiếp xúc thì mới va chạm)
 		float entryTime = max(txEntry, tyEntry);
 		// thời gian hết va chạm là thời gian của 2 trục, (1 cái ra khỏi là object hết va chạm)
 		float exitTime = min(txExit, tyExit);
-		//_RPT1(0, "[INFO] ENTRY TIME : %f \n", entryTime);
-		//_RPT1(0, "[INFO] TXENTRY : %ld \n", txEntry);
-		//_RPT1(0, "[INFO] TYENTRY : %ld \n", tyEntry);
-		//_RPT1(0, "[INFO] TXEXIT : %f \n", txExit);
-		//_RPT1(0, "[INFO] TYEXIT : %f \n", tyExit);
 
 		// kiểm tra xem có thể va chạm không, mình xét ngược lại cho nhanh
 		if (entryTime > exitTime || (txEntry < 0 && tyEntry < 0) || txEntry > dt || tyEntry > dt)
@@ -161,28 +156,27 @@ public:
 			// va cham theo truc x
 			if (dxEntry > 0.0f)
 			{
-				if (dx > 0.0f)	result = eDirection::D_RIGHT;
-				else result = eDirection::D_LEFT;
+				if (dx != 0.0f)	result = eDirection::D_RIGHT;
 			}
+			// dx co the am neu object  va cham voi other
 			else
 			{
-				if (dx > 0.0f)	result = eDirection::D_LEFT;
-				else result = eDirection::D_RIGHT;
+				if (dx != 0.0f)	result = eDirection::D_LEFT;
 			}
 		}
 		else
 		{
 			if (dyEntry > 0.0f)
 			{
-				if (dy > 0.0f)	result = eDirection::D_UP;
-				else result = eDirection::D_DOWN;
+				if (dy != 0.0f)	result = eDirection::D_UP;
 			}
 			else
 			{
-				if (dy > 0.0f)	result = eDirection::D_DOWN;
-				else result = eDirection::D_UP;
+				if (dy != 0.0f)	result = eDirection::D_DOWN;
 			}
 		}
+
+		//_RPT1(0, "[INFO] ENTRY TIME : %f \n", entryTime);
 
 		return entryTime;
 	}

@@ -32,7 +32,7 @@
 #define SCREEN_WIDTH 500
 #define SCREEN_HEIGHT 500
 
-#define MAX_FRAME_RATE 50
+#define MAX_FRAME_RATE 90
 
 CGame *game;
 CMario *mario;
@@ -112,7 +112,7 @@ void Update(DWORD dt)
 
 	ball->update(dt, bar1->getBoundingBox(), bar2->getBoundingBox());
 
-	_hub->update(dt);
+	//_hub->update(dt);
 }
 
 /*
@@ -134,7 +134,7 @@ void Render()
 		ball->Render();
 		bar1->Render();
 		bar2->Render();
-		_hub->render();
+		//_hub->render();
 
 		spriteHandler->End();
 		d3ddv->EndScene();

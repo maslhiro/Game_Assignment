@@ -69,8 +69,6 @@ public:
 
 	void update(DWORD, RECT, RECT);
 
-	void update02(DWORD, RECT, RECT, float);
-
 
 };
 
